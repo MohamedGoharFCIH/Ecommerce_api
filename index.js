@@ -21,7 +21,7 @@ const userRoutes = require("./routes/user");
 
 
 mongoose
-  .connect("mongodb://mongodb:27017/ecommerce", { useNewUrlParser: true })
+  .connect(process.env.DB_URL, { useNewUrlParser: true })
   .then(() => {
     console.log("connect to DB ");
   })
