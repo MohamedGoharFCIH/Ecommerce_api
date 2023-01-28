@@ -7,7 +7,7 @@ const WorkAddress = require("../models/work_address");
 const { validationResult } = require("express-validator");
 const helper = require("../helpers/helper");
 const crypto = require("crypto");
-const sendEmail = require("../utils/email/sendEmail")
+const sendEmail = require("../utils/email/sendEmail");
 
 const bcryptSalt = process.env.BCRYPT_SALT;
 
@@ -29,16 +29,33 @@ exports.createUser = async (req, res, next) => {
     }
 
     const exist_user_email = await User.findOne({ email: req.body.email });
-    const exist_username = await User.findOne({ username: req.body.username });
     if (exist_user_email) {
       return res.status(409).json({
         error: "Email aleardy exist",
       });
     }
-
+    const exist_username = await User.findOne({ username: req.body.username });
     if (exist_username) {
       return res.status(409).json({
         error: "Username aleardy exist",
+      });
+    }
+    const exist_callNumber = await User.findOne({
+      callNumber: req.body.callNumber,
+    });
+
+    if (exist_callNumber) {
+      return res.status(409).json({
+        error: "Call Number aleardy exist",
+      });
+    }
+
+    const exist_whatsapp = await User.findOne({
+      whatsappNumber: req.body.whatsappNumber,
+    });
+    if (exist_whatsapp) {
+      return res.status(409).json({
+        error: "Whatsapp Number aleardy exist",
       });
     }
 
@@ -285,7 +302,7 @@ exports.requestPasswordReset = async (req, res, next) => {
       userId: user_id,
       token: hash,
     }).save();
-    console.log(process.env.BaseUrl)
+    console.log(process.env.BaseUrl);
     const link = `${process.env.BaseUrl}/passwordReset?token=${resetToken}&id=${user_id}`;
 
     sendEmail(
