@@ -13,7 +13,7 @@ const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  birthdate: { type: Date },
+  birthdate: { type: String },
   emiratesCity: { type: String, required: true },
   area: { type: String, required: true },
   residentailAddress: {

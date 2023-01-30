@@ -18,7 +18,7 @@ router.post(
   // body("username", "username must exists ").exists(),
   body("username", "username cannot be Empty").not().isEmpty(),
   // body("birthdate", "birthdate must exists ").exists(),
-  body("birthdate", "birthdate must be dateTime").isISO8601().toDate(),
+  body("birthdate", "birthdate Cannot be empty").not().isEmpty(),
   // body("emiratesID", "emirates ID must exists ").exists(),
   body("emiratesID", "emirates ID length must be 15 digits").isLength({
     min: 15,
