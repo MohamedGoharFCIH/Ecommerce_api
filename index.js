@@ -1,35 +1,35 @@
+require('dotenv').config()
+const sequelize = require("./database/db");
 const express = require("express");
-const mongoose = require("mongoose");
 const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const userRoutes = require("./routes/user");
+const User = require("./models/user");
+const WorkAddress = require("./models/work_address");
+const ResidentialAddress = require("./models/residential_address");
+const Token = require("./models/token");
 
-// const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, MONGODB_LOCAL_PORT } = process.env;
+User.hasOne(WorkAddress, { foreignKey: "userId" });
 
-// mongoose
-//   .connect(
-//     `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${MONGODB_LOCAL_PORT}/${DB_NAME}?authSource=admin`,
-//     { useNewUrlParser: true }
-//   )
-//   .then(() => {
-//     console.log("connect to DB ");
-//   })
-//   .catch(() => {
-//     console.log("Connection Failed");
-//   });
+WorkAddress.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
 
 
-mongoose
-  .connect(process.env.DB_URL, { useNewUrlParser: true })
-  .then(() => {
-    console.log("connect to DB ");
-  })
-  .catch(() => {
-    console.log("Connection Failed..");
-  });
+ResidentialAddress.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+User.hasOne(ResidentialAddress, {
+  foreignKey: "userId",
+});
 
-mongoose.Promise = global.Promise;
+Token.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,6 +45,19 @@ app.get("*", (req, res) => {
   res.send("Error 404 ...! Page Not Found");
 });
 
-app.listen(3000, () => {
-  console.log("Server is running at port " + 3000);
-});
+sequelize
+  .sync()
+  .then(() => {
+    // app.listen(3000, () => {
+    //     console.log("server running on localhost:3000")
+    // });
+
+    console.log(
+      "Connection has been established successfully and databases models created."
+    );
+  })
+  .catch((error) => {
+    console.error("Unable to connect to the database: ", error);
+  });
+
+module.exports = app.listen(3000);

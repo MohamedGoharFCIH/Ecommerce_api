@@ -1,32 +1,46 @@
-version: "3.8"
+version: '3.8'
 
-services:
-  mongodb:
-    image: mongo:5.0.2
-    restart: unless-stopped
+services: 
+  db:
+    # container_name: db
+    # container_name: bluediamond_db
+    image: mysql
+    restart: always
     env_file: ./.env
-    # environment:
-    #   - MONGO_INITDB_ROOT_USERNAME=$DB_USER
-    #   - MONGO_INITDB_ROOT_PASSWORD=$DB_PASSWORD
+    environment:
+      MYSQL_DATABASE: 'ecommerce'
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: '123456'
+      MYSQL_ROOT_PASSWORD: '123456'
+    
     ports:
-      - 27017:27017
-    volumes:
-      - db:/data/db
+      - "3306:3306"
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+    # networks:
+    #   - backend
+    volumes: 
+      - db-config:/etc/mysql
+      - db-data:/var/lib/mysql
+      - ./db/backup/files/:/data_backup/data
+    # networks:
+    #   - backend
   app:
     depends_on:
-      - mongodb
+      - db
     build: .
-    restart: unless-stopped
     env_file: ./.env
     ports:
-      - $PORT:$PORT
-    environment:
-      - DB_HOST=mongodb
-      - DB_USER=$DB_USER
-      - DB_PASSWORD=$DB_PASSWORD
-      - DB_NAME=$DB_NAME
-      - DB_PORT=$MONGODB_DOCKER_PORT
-  
+      - 3000:3000
+    volumes: 
+      - ./app:/app
+    stdin_open: true
+    tty: true
 
-volumes:
-  db:
+volumes: 
+  db-config:
+  db-data:
+
+# networks:
+#   backend:

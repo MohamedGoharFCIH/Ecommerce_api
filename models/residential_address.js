@@ -1,20 +1,63 @@
-const mongoose = require("mongoose");
-const uniqueValidator = require("mongoose-unique-validator");
+const Sequelize = require("sequelize");
+const sequelize = require("../database/db");
 
-const Schema = mongoose.Schema;
+const ResidentialAddress = sequelize.define("residentialAddress", {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    allowNull: false,
+    primaryKey: true,
+  },
 
-const residentailAddressSchema = new Schema({
-  street: { type: String, required: true },
-  name: { type: String, required: true },
-  number: { type: Number, required: true },
-  landMark: { type: String, required: true },
-  groupType: { type: String, required: true },
-  contactPerson: { type: String, required: true },
-  personsNumber: { type: Number, required: true },
-  
-}, { timestamps: true });
+  street: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  number: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    notEmpty: true,
+  },
+  landMark: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  groupType: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  contactPerson: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  personsNumber: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    notEmpty: true,
+  }
+
+});
+
+module.exports = ResidentialAddress;
 
 
-residentailAddressSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model("ResidentailAddress", residentailAddressSchema);
+
+
+
+
+
+
+
+
+
+

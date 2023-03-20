@@ -1,15 +1,35 @@
-const mongoose = require("mongoose");
-const uniqueValidator = require("mongoose-unique-validator");
+const Sequelize = require("sequelize");
+const sequelize = require("../database/db");
 
-const Schema = mongoose.Schema;
+const WorkAddress = sequelize.define("workAddress", {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    allowNull: false,
+    primaryKey: true,
+  },
 
-const workAddressSchema = new Schema({
-  workPlaceName: { type: String, required: true },
-  workPlaceNameNumber: { type: Number, required: true },
-  contactPerson: { type: String, required: true },
-  staffNumbers: { type: Number, required: true },
-}, { timestamps: true });
+  workPlaceName: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  workPlaceNameNumber: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    notEmpty: true,
+  },
+  contactPerson: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  staffNumbers: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    notEmpty: true,
+  }
+});
 
-workAddressSchema.plugin(uniqueValidator);
+module.exports = WorkAddress;
 
-module.exports = mongoose.model("WorkAddress", workAddressSchema);

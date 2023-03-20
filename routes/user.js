@@ -66,7 +66,7 @@ router.post(
   //   "Residentail address street must exists "
   // ).exists(),
   body(
-    "residentailAddress.street",
+    "residentialAddress.street",
     "Residentail address street cannot be Empty"
   )
     .not()
@@ -76,14 +76,14 @@ router.post(
   //   "Residentail address persons number must exists "
   // ).exists(),
   body(
-    "residentailAddress.personsNumber",
-    "Residentail address persons number must be number"
+    "residentialAddress.personsNumber",
+    "Residential address persons number must be number"
   ).isInt(),
   // body(
   //   "residentailAddress.name",
   //   "residentail  Address name  must exists "
   // ).exists(),
-  body("residentailAddress.name", "residentail Address  name cannot be Empty")
+  body("residentialAddress.name", "residentail Address  name cannot be Empty")
     .not()
     .isEmpty(),
   // body(
@@ -91,8 +91,8 @@ router.post(
   //   "residentail  Address landMark  must exists "
   // ).exists(),
   body(
-    "residentailAddress.landMark",
-    "residentail Address  landMark cannot be Empty"
+    "residentialAddress.landMark",
+    "residential Address  landMark cannot be Empty"
   )
     .not()
     .isEmpty(),
@@ -101,7 +101,7 @@ router.post(
   //   "residentail  Address groupType  must exists "
   // ).exists(),
   body(
-    "residentailAddress.groupType",
+    "residentialAddress.groupType",
     "residentail Address  groupType cannot be Empty"
   )
     .not()
@@ -111,7 +111,7 @@ router.post(
   //   "residentail  Address contact person  must exists "
   // ).exists(),
   body(
-    "residentailAddress.contactPerson",
+    "residentialAddress.contactPerson",
     "residentail Address  contact person cannot be Empty"
   )
     .not()
@@ -121,7 +121,7 @@ router.post(
   //   "residentail  Address nummber  must exists "
   // ).exists(),
   body(
-    "residentailAddress.number",
+    "residentialAddress.number",
     "residentail Address number must be number"
   ).isInt(),
 

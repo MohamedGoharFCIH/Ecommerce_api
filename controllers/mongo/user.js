@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const Token = require("../models/token");
-const ResidentialAddress = require("../models/residential_address");
+const ResidentailAddress = require("../models/residential_address");
 const WorkAddress = require("../models/work_address");
 const { validationResult } = require("express-validator");
 const helper = require("../helpers/helper");
@@ -12,32 +12,37 @@ const sendEmail = require("../utils/email/sendEmail");
 const bcryptSalt = process.env.BCRYPT_SALT;
 
 exports.createUser = async (req, res, next) => {
+  let userWorkAddress, userResidentailAddress;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const exist_emiratesId = await User.findOne({ where: { emiratesID: req.body.emiratesID } });
+    const exist_emiratesId = await User.findOne({
+      emiratesID: req.body.emiratesID,
+    });
     if (exist_emiratesId) {
       return res.status(409).json({
         error: "Emirates ID aleardy exists",
       });
     }
 
-    const exist_user_email = await User.findOne({ where: { email: req.body.email } });
+    const exist_user_email = await User.findOne({ email: req.body.email });
     if (exist_user_email) {
       return res.status(409).json({
         error: "Email aleardy exist",
       });
     }
-    const exist_username = await User.findOne({ where: { username: req.body.username } });
+    const exist_username = await User.findOne({ username: req.body.username });
     if (exist_username) {
       return res.status(409).json({
         error: "Username aleardy exist",
       });
     }
-    const exist_callNumber = await User.findOne({ where: { callNumber: req.body.callNumber } });
+    const exist_callNumber = await User.findOne({
+      callNumber: req.body.callNumber,
+    });
 
     if (exist_callNumber) {
       return res.status(409).json({
@@ -45,12 +50,22 @@ exports.createUser = async (req, res, next) => {
       });
     }
 
-    const exist_whatsapp = await User.findOne({ where: { whatsappNumber: req.body.whatsappNumber } });
+    const exist_whatsapp = await User.findOne({
+      whatsappNumber: req.body.whatsappNumber,
+    });
     if (exist_whatsapp) {
       return res.status(409).json({
         error: "Whatsapp Number aleardy exist",
       });
     }
+
+    const workAddress = new WorkAddress(req.body.workAddress);
+    const residentailAddress = new ResidentailAddress(
+      req.body.residentailAddress
+    );
+
+    userWorkAddress = await workAddress.save();
+    userResidentailAddress = await residentailAddress.save();
 
     const hash = await new Promise((resolve, reject) => {
       bcrypt.hash(req.body.password, Number(bcryptSalt), function (err, hash) {
@@ -59,7 +74,7 @@ exports.createUser = async (req, res, next) => {
       });
     });
     if (hash) {
-      const user = await User.create({
+      const user = new User({
         fullName: req.body.fullName,
         email: req.body.email,
         password: hash,
@@ -71,17 +86,12 @@ exports.createUser = async (req, res, next) => {
         whatsappNumber: req.body.whatsappNumber,
         emiratesCity: req.body.emiratesCity,
         area: req.body.area,
-        workAddress: req.body.workAddress,
-        residentialAddress: req.body.residentialAddress,
+        workAddress: userWorkAddress._id,
+        residentailAddress: userResidentailAddress._id,
+      });
 
-      },
-        {
-
-          include: [WorkAddress, ResidentialAddress]
-
-        });
-
-      if (user) {
+      const newUser = await user.save();
+      if (newUser) {
         const token = jwt.sign(
           { email: user.email, id: user._id },
           process.env.JWT_KEY,
@@ -91,12 +101,18 @@ exports.createUser = async (req, res, next) => {
         return res.status(200).json({
           token: token,
           expiresIn: 20 * 24 * 60 * 60 * 1000,
-          userId: user._id,
+          userId: newUser._id,
         });
       }
     }
   } catch (err) {
     console.log("error from create User", err);
+    if (userResidentailAddress) {
+      await ResidentailAddress.deleteOne({ _id: userResidentailAddress._id });
+    }
+    if (userWorkAddress) {
+      await WorkAddress.deleteOne({ _id: userWorkAddress._id });
+    }
     return res.status(500).json({
       error: "Invalid authentication credentials!",
     });
@@ -110,7 +126,7 @@ exports.userLogin = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const user = await User.findOne({ where: { email: req.body.email } });
+    const user = await User.findOne({ email: req.body.email });
     console.log("req", req.body);
     if (!user) {
       return res.status(401).json({
@@ -158,10 +174,10 @@ exports.getUsers = (req, res, next) => {
   const pageSize = +req.query.pagesize;
   const currentPage = +req.query.page;
   console.log(req.query);
-  let userQuery = User.findAll({ include: [WorkAddress, ResidentialAddress] });
+  const userQuery = User.find().populate("workAddress residentailAddress");
   let fetchedUsers;
   if (pageSize && currentPage) {
-    userQuery = User.findAll({ offset: pageSize * (currentPage - 1), limit: pageSize, include: [WorkAddress, ResidentialAddress] });
+    userQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
   }
   userQuery
     .then(async (users) => {
@@ -184,19 +200,18 @@ exports.getUsers = (req, res, next) => {
 };
 
 exports.getUser = (req, res, next) => {
-  User.findOne({ where: { id: req.params.id }, include: [WorkAddress, ResidentialAddress] })
+  User.findById(helper.objId(req.params.id))
     .then(async (user) => {
       if (user) {
         return res.status(200).json({
           message: "user fetched",
-          user: user
+          user: await user.populate("workAddress residentailAddress"),
         });
       } else {
         res.status(404).json({ error: "user not found!" });
       }
     })
     .catch((error) => {
-      console.log()
       return res.status(500).json({
         message: "Fetching user failed!",
       });
@@ -210,7 +225,7 @@ exports.changePassword = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    let user = await User.findByPk(req.userData.userId);
+    let user = await User.findById(helper.objId(req.userData.userId));
     if (!user) {
       return res.status(401).json({
         error: "User not found",
@@ -247,13 +262,10 @@ exports.changePassword = async (req, res, next) => {
       });
     });
     if (hash) {
-      let updated = await User.update({ password: hash }, {
-        where: {
-          id: req.userData.userId
-        }
-      });
-
-
+      let updated = await User.updateOne(
+        { _id: helper.objId(req.userData.userId) },
+        { $set: { password: hash } }
+      );
       if (updated) {
         return res.status(200).json({
           message: "Password updated successfully",
@@ -273,34 +285,26 @@ exports.requestPasswordReset = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const user = await User.findOne({
-      where: { email: req.body.email },
-    });
-
+    const user = await User.findOne({ email: req.body.email });
     if (!user) {
       return res.status(404).json({
         error: "Not found user with this Email",
       });
     }
-    // let user_id = helper.objId(user._id);
-    await Token.destroy({
-      where: {
-        userId: user.id
-      }
-    });
-    // if (token) await token.deleteOne();
+    let user_id = helper.objId(user._id);
+    let token = await Token.findOne({ id: user_id });
+    if (token) await token.deleteOne();
 
     let resetToken = crypto.randomBytes(32).toString("hex");
     const hash = await bcrypt.hash(resetToken, Number(bcryptSalt));
-    let expireDate = new Date(new Date().getTime() + (60 * 60 * 1000))
-    await Token.create({
-      userId: user.id,
+
+    await new Token({
+      userId: user_id,
       token: hash,
-      tokenExpires: expireDate
-    });
+    }).save();
     console.log(process.env.BaseUrl);
-    const link = `${process.env.BaseUrl}/passwordReset?token=${resetToken}&id=${user.id}`;
-    console.log("link", link)
+    const link = `${process.env.BaseUrl}/passwordReset?token=${resetToken}&id=${user_id}`;
+
     sendEmail(
       user.email,
       "Password Reset Request",

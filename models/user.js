@@ -1,29 +1,80 @@
-const mongoose = require("mongoose");
-const uniqueValidator = require("mongoose-unique-validator");
+const Sequelize = require("sequelize");
+const sequelize = require("../database/db");
 
-
-const Schema = mongoose.Schema;
-
-const userSchema = new Schema({
-  fullName: { type: String, required: true },
-  emiratesID: { type: String, required: true,  unique: true },
-  nationality: { type: String, required: true },
-  callNumber: { type: String, required: true, unique: true },
-  whatsappNumber: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  birthdate: { type: String },
-  emiratesCity: { type: String, required: true },
-  area: { type: String, required: true },
-  residentailAddress: {
-    type: Schema.Types.ObjectId,
-    ref: "ResidentailAddress",
+const User = sequelize.define("user", {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    allowNull: false,
+    primaryKey: true,
   },
-  workAddress: { type: Schema.Types.ObjectId, ref: "WorkAddress" },
-  isAdmin: { type: Boolean, default: false },
-},  { timestamps: true });
 
-userSchema.plugin(uniqueValidator);
+  fullName: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  email: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    unique: true,
+    notEmpty: true,
+    validate: {
+      isEmail: true,
+    },
+  },
+  password: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  nationality: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  callNumber: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    unique: true,
+    notEmpty: true,
+  },
+  whatsappNumber: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    unique: true,
+    notEmpty: true,
+  },
+  username: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    unique: true,
+    notEmpty: true,
+  },
+  emiratesID: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    unique: true,
+    notEmpty: true,
+  },
+  birthdate: {
+    type: Sequelize.STRING,
+  },
+  emiratesCity:{
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  area:{
+    type: Sequelize.STRING,
+    allowNull: false,
+    notEmpty: true,
+  },
+  isAdmin:{
+    type: Sequelize.BOOLEAN,
+    defaultValue:false
+  }
 
-module.exports = mongoose.model("User", userSchema);
+});
+
+module.exports = User;
