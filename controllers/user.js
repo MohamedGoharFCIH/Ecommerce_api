@@ -82,16 +82,20 @@ exports.createUser = async (req, res, next) => {
         });
 
       if (user) {
-        const token = jwt.sign(
-          { email: user.email, id: user._id },
-          process.env.JWT_KEY,
-          { expiresIn: "20d" }
-        );
-        console.log(token);
-        return res.status(200).json({
-          token: token,
-          expiresIn: 20 * 24 * 60 * 60 * 1000,
-          userId: user._id,
+        // const token = jwt.sign(
+        //   { email: user.email, id: user._id },
+        //   process.env.JWT_KEY,
+        //   { expiresIn: "20d" }
+        // );
+        // console.log(token);
+
+        // return res.status(200).json({
+        //   token: token,
+        //   expiresIn: 20 * 24 * 60 * 60 * 1000,
+        //   userId: user._id,
+        // });
+         return res.status(200).json({
+          message :"User created..."
         });
       }
     }
@@ -136,7 +140,7 @@ exports.userLogin = async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      { email: user.email, id: user._id },
+      { email: user.email, id: user.id },
       process.env.JWT_KEY,
       { expiresIn: "20d" }
     );
@@ -144,7 +148,7 @@ exports.userLogin = async (req, res, next) => {
     return res.status(200).json({
       token: token,
       expiresIn: 20 * 24 * 60 * 60 * 1000,
-      userId: user._id,
+      userId: user.id,
     });
   } catch (err) {
     console.log("err", err);
