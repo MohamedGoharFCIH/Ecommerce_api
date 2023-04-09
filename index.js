@@ -5,10 +5,17 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const userRoutes = require("./routes/user");
+const productRoutes = require("./routes/product")
 const User = require("./models/user");
 const WorkAddress = require("./models/work_address");
 const ResidentialAddress = require("./models/residential_address");
 const Token = require("./models/token");
+const Product = require("./models/product")
+
+const file = require("./middleware/file");
+
+const upload  = file.extractFile;
+
 
 User.hasOne(WorkAddress, { foreignKey: "userId" });
 
@@ -31,12 +38,19 @@ Token.belongsTo(User, {
   as: "user",
 });
 
+Product.belongsTo(User, {
+  foreignKey: "addedBy",
+  as: "user",
+});
+
+
 const app = express();
+app.use(upload);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 app.use("/api/user", userRoutes);
-
+app.use("/api/product", productRoutes);
 app.get("/", (req, res) => {
   res.send("hello Server running on localhost: 3000");
 });
