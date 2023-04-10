@@ -45,9 +45,10 @@ Product.belongsTo(User, {
 
 
 const app = express();
-app.use(upload);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(upload);
+app.use("/images", express.static(path.join("./images")));
 app.use(cors());
 app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);
